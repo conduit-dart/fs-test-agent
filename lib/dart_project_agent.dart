@@ -5,10 +5,10 @@ import 'dart:io';
 
 import 'package:pubspec/pubspec.dart';
 
-import 'command_line_agent.dart';
+import 'working_directory_agent.dart';
 
-/// A [CommandLineAgent] with additional behavior for managing a 'Dart package' directory.
-class ProjectAgent extends CommandLineAgent {
+/// A [WorkingDirectoryAgent] with additional behavior for managing a 'Dart package' directory.
+class DartProjectAgent extends WorkingDirectoryAgent {
   /// Creates a new package and terminal on that package's working directory.
   ///
   /// Make sure to call [tearDownAll] in your test's method of the same name to
@@ -16,7 +16,7 @@ class ProjectAgent extends CommandLineAgent {
   ///
   /// Both [dependencies] and [devDependencies] are a valid dependency map,
   /// e.g. `{'aqueduct': '^3.0.0'}` or `{'relative' : {'path' : '../'}}`
-  ProjectAgent(
+  DartProjectAgent(
     this.name, {
     Map<String, dynamic> dependencies = const {},
     Map<String, dynamic> devDependencies = const {},
@@ -35,7 +35,7 @@ class ProjectAgent extends CommandLineAgent {
     addOrReplaceFile("lib/$name.dart", "");
   }
 
-  ProjectAgent.existing(Uri uri) : super(Directory.fromUri(uri)) {
+  DartProjectAgent.existing(Uri uri) : super(Directory.fromUri(uri)) {
     final pubspecFile =
         File.fromUri(workingDirectory.uri.resolve("pubspec.yaml"));
     if (!pubspecFile.existsSync()) {

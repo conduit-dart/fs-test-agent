@@ -1,19 +1,20 @@
 /// Support for doing something awesome.
 ///
 /// More dartdocs go here.
+library terminal;
 
 import 'dart:async';
 import 'dart:io';
 
 /// A utility for manipulating files and directories in [workingDirectory].
-class CommandLineAgent {
-  CommandLineAgent(this.workingDirectory, {bool create = true}) {
+class WorkingDirectoryAgent {
+  WorkingDirectoryAgent(this.workingDirectory, {bool create = true}) {
     if (create) {
       workingDirectory.createSync(recursive: true);
     }
   }
 
-  CommandLineAgent.current() : this(Directory.current);
+  WorkingDirectoryAgent.current() : this(Directory.current);
 
   final Directory workingDirectory;
 
