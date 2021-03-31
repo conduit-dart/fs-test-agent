@@ -6,7 +6,7 @@ library terminal;
 import 'dart:async';
 import 'dart:io';
 
-import 'package:pubspec2/pubspec2.dart';
+import 'package:pubspec/pubspec.dart';
 
 /// A [CommandLineAgent] with additional behavior for managing a 'Dart package' directory.
 class ProjectAgent extends CommandLineAgent {
@@ -16,11 +16,12 @@ class ProjectAgent extends CommandLineAgent {
   /// delete the [projectsDirectory] ]where the package is written to. ('$PWD/tmp')
   ///
   /// Both [dependencies] and [devDependencies] are a valid dependency map,
-  /// e.g. `{"aqueduct": "^3.0.0"}` or `{"relative" : {"path" : "../"}}`
-  ProjectAgent(this.name,
-      {Map<String, dynamic> dependencies = const {},
-      Map<String, dynamic> devDependencies = const {}})
-      : super(Directory.fromUri(projectsDirectory.uri.resolve("$name/"))) {
+  /// e.g. `{'aqueduct': '^3.0.0'}` or `{'relative' : {'path' : '../'}}`
+  ProjectAgent(
+    this.name, {
+    Map<String, dynamic> dependencies = const {},
+    Map<String, dynamic> devDependencies = const {},
+  }) : super(Directory.fromUri(projectsDirectory.uri.resolve("$name/"))) {
     if (!projectsDirectory.existsSync()) {
       projectsDirectory.createSync();
     }
@@ -77,7 +78,8 @@ class ProjectAgent extends CommandLineAgent {
     } catch (_) {}
   }
 
-  String _analysisOptionsContents = """analyzer:
+  final _analysisOptionsContents = """
+  analyzer:
   strong-mode:
     implicit-casts: false
 """;
@@ -91,13 +93,13 @@ class ProjectAgent extends CommandLineAgent {
     }
     final indentString = indentBuffer.toString();
 
-    m.forEach((k, v) {
-      buf.write("$indentString$k: ");
-      if (v is String) {
-        buf.writeln("$v");
-      } else if (v is Map<String, dynamic>) {
+    m.forEach((key, value) {
+      buf.write("$indentString$key: ");
+      if (value is String) {
+        buf.writeln(value);
+      } else if (value is Map<String, dynamic>) {
         buf.writeln();
-        buf.write(_asYaml(v, indent: indent + 1));
+        buf.write(_asYaml(value, indent: indent + 1));
       }
     });
 
@@ -105,8 +107,11 @@ class ProjectAgent extends CommandLineAgent {
   }
 
   String _pubspecContents(
-      String name, Map<String, dynamic> deps, Map<String, dynamic> devDeps,
-      {bool nullsafe = true}) {
+    String name,
+    Map<String, dynamic> deps,
+    Map<String, dynamic> devDeps, {
+    bool nullsafe = true,
+  }) {
     return """
 name: $name
 description: desc
@@ -119,7 +124,7 @@ dependencies:
 ${_asYaml(deps, indent: 1)}
 
 dev_dependencies:
-${_asYaml(devDeps, indent: 1)}    
+${_asYaml(devDeps, indent: 1)}
 """;
   }
 
@@ -217,35 +222,12 @@ class CommandLineAgent {
     file.writeAsStringSync("$directives\n$contents");
   }
 
-/*
-Path Components: [analysis_options.yaml]
-Relative: []
-Uri: file:///C:/projects/dart-test-terminal/tmp/test_project/
-
-Path Components: [pubspec.yaml]
-Relative: []
-Uri: file:///C:/projects/dart-test-terminal/tmp/test_project/
-
-Path Components: [, C:, projects, dart-test-terminal, tmp, test_project, lib, test_project.dart]
-Relative: [, C:, projects, dart-test-terminal, tmp, test_project, lib]
-Uri: c:/projects/dart-test-terminal/tmp/test_project/lib/
-
- */
-
-  /*
-  Unsupported operation: Cannot extract a file path from a c URI
-  dart:io                                                    new Directory.fromUri
-  package:command_line_agent/command_line_agent.dart 209:33  CommandLineAgent.addOrReplaceFile
-  package:command_line_agent/command_line_agent.dart 35:5    new ProjectAgent
-  test\project_agent_test.dart 6:19
- */
-
   /// Updates the contents of an existing file
   ///
   /// [path] is relative path to file e.g. "lib/src/file.dart"
   /// [contents] is a function that takes the current contents of the file and returns
   /// the modified contents of the file
-  void modifyFile(String path, String contents(String current)) {
+  void modifyFile(String path, String Function(String current) contents) {
     final pathComponents = path.split("/");
     final relativeDirectoryComponents =
         pathComponents.sublist(0, pathComponents.length - 1);
@@ -274,13 +256,13 @@ Uri: c:/projects/dart-test-terminal/tmp/test_project/lib/
   }
 
   Future<ProcessResult> getDependencies({bool offline = true}) async {
-    var args = ["get"];
+    final args = ["get"];
     if (offline) {
       args.add("--offline");
     }
 
     final cmd = Platform.isWindows ? "pub.bat" : "pub";
-    var result = await Process.run(cmd, args,
+    final result = await Process.run(cmd, args,
             workingDirectory: workingDirectory.absolute.path, runInShell: true)
         .timeout(const Duration(seconds: 45));
 
