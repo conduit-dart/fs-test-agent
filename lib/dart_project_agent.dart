@@ -3,6 +3,7 @@
 /// More dartdocs go here.
 import 'dart:io';
 
+import 'package:path/path.dart';
 import 'package:pubspec/pubspec.dart';
 
 import 'working_directory_agent.dart';
@@ -20,13 +21,13 @@ class DartProjectAgent extends WorkingDirectoryAgent {
     this.name, {
     Map<String, dynamic> dependencies = const {},
     Map<String, dynamic> devDependencies = const {},
-  }) : super(Directory.fromUri(projectsDirectory.uri.resolve("$name/"))) {
+  }) : super(Directory(join(projectsDirectory.path, name))) {
     if (!projectsDirectory.existsSync()) {
       projectsDirectory.createSync();
     }
     workingDirectory.createSync(recursive: true);
 
-    final libDir = Directory.fromUri(workingDirectory.uri.resolve("lib/"));
+    final libDir = Directory(join(workingDirectory.path, "lib"));
     libDir.createSync(recursive: true);
 
     addOrReplaceFile("analysis_options.yaml", _analysisOptionsContents);
@@ -36,8 +37,7 @@ class DartProjectAgent extends WorkingDirectoryAgent {
   }
 
   DartProjectAgent.existing(Uri uri) : super(Directory.fromUri(uri)) {
-    final pubspecFile =
-        File.fromUri(workingDirectory.uri.resolve("pubspec.yaml"));
+    final pubspecFile = File(join(workingDirectory.path, "pubspec.yaml"));
     if (!pubspecFile.existsSync()) {
       throw ArgumentError(
           "the uri '$uri' is not a Dart project directory; does not contain pubspec.yaml");
@@ -47,27 +47,26 @@ class DartProjectAgent extends WorkingDirectoryAgent {
     name = pubspec.name!;
   }
 
-  /// Temporary directory where projects are stored ('$PWD/tmp')
+  /// Temporary directory where projects are stored ('/tmp/conduit')
   static Directory get projectsDirectory =>
-      Directory.fromUri(Directory.current.uri.resolve("tmp/"));
+      Directory(join(Directory.systemTemp.path, 'conduit'));
 
   /// Name of this project
   late String name;
 
   /// Directory of lib/ in project
   Directory get libraryDirectory {
-    return Directory.fromUri(workingDirectory.uri.resolve("lib/"));
+    return Directory(join(workingDirectory.path, 'lib'));
   }
 
   /// Directory of test/ in project
   Directory get testDirectory {
-    return Directory.fromUri(workingDirectory.uri.resolve("test/"));
+    return Directory(join(workingDirectory.path, "test"));
   }
 
   /// Directory of lib/src/ in project
   Directory get srcDirectory {
-    return Directory.fromUri(
-        workingDirectory.uri.resolve("lib/").resolve("src/"));
+    return Directory(join(workingDirectory.path, "lib", "src"));
   }
 
   /// Deletes [projectsDirectory]. Call after tests are complete
